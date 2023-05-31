@@ -1,0 +1,24 @@
+{
+  "name": "solar-system-with-threejs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Abir-Bouhriz/Solar-System-With-Threejs.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Abir-Bouhriz/Solar-System-With-Threejs/issues"
+  },
+  "homepage": "https://github.com/Abir-Bouhriz/Solar-System-With-Threejs#readme",
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^15.1.0",
+    "rollup": "^3.23.0"
+  }
+}
