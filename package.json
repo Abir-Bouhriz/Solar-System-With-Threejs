@@ -3,8 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "rollup -c",
+    "watch": "rollup -c -w"
   },
   "repository": {
     "type": "git",
@@ -20,5 +22,9 @@
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^15.1.0",
     "rollup": "^3.23.0"
+  },
+  "dependencies": {
+    "camera-controls": "^2.3.7",
+    "three": "^0.152.2"
   }
 }
