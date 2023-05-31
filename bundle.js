@@ -29439,6 +29439,127 @@ class Scene extends Object3D {
 
 }
 
+class RingGeometry extends BufferGeometry {
+
+	constructor( innerRadius = 0.5, outerRadius = 1, thetaSegments = 32, phiSegments = 1, thetaStart = 0, thetaLength = Math.PI * 2 ) {
+
+		super();
+
+		this.type = 'RingGeometry';
+
+		this.parameters = {
+			innerRadius: innerRadius,
+			outerRadius: outerRadius,
+			thetaSegments: thetaSegments,
+			phiSegments: phiSegments,
+			thetaStart: thetaStart,
+			thetaLength: thetaLength
+		};
+
+		thetaSegments = Math.max( 3, thetaSegments );
+		phiSegments = Math.max( 1, phiSegments );
+
+		// buffers
+
+		const indices = [];
+		const vertices = [];
+		const normals = [];
+		const uvs = [];
+
+		// some helper variables
+
+		let radius = innerRadius;
+		const radiusStep = ( ( outerRadius - innerRadius ) / phiSegments );
+		const vertex = new Vector3();
+		const uv = new Vector2();
+
+		// generate vertices, normals and uvs
+
+		for ( let j = 0; j <= phiSegments; j ++ ) {
+
+			for ( let i = 0; i <= thetaSegments; i ++ ) {
+
+				// values are generate from the inside of the ring to the outside
+
+				const segment = thetaStart + i / thetaSegments * thetaLength;
+
+				// vertex
+
+				vertex.x = radius * Math.cos( segment );
+				vertex.y = radius * Math.sin( segment );
+
+				vertices.push( vertex.x, vertex.y, vertex.z );
+
+				// normal
+
+				normals.push( 0, 0, 1 );
+
+				// uv
+
+				uv.x = ( vertex.x / outerRadius + 1 ) / 2;
+				uv.y = ( vertex.y / outerRadius + 1 ) / 2;
+
+				uvs.push( uv.x, uv.y );
+
+			}
+
+			// increase the radius for next row of vertices
+
+			radius += radiusStep;
+
+		}
+
+		// indices
+
+		for ( let j = 0; j < phiSegments; j ++ ) {
+
+			const thetaSegmentLevel = j * ( thetaSegments + 1 );
+
+			for ( let i = 0; i < thetaSegments; i ++ ) {
+
+				const segment = i + thetaSegmentLevel;
+
+				const a = segment;
+				const b = segment + thetaSegments + 1;
+				const c = segment + thetaSegments + 2;
+				const d = segment + 1;
+
+				// faces
+
+				indices.push( a, b, d );
+				indices.push( b, c, d );
+
+			}
+
+		}
+
+		// build geometry
+
+		this.setIndex( indices );
+		this.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
+		this.setAttribute( 'normal', new Float32BufferAttribute( normals, 3 ) );
+		this.setAttribute( 'uv', new Float32BufferAttribute( uvs, 2 ) );
+
+	}
+
+	copy( source ) {
+
+		super.copy( source );
+
+		this.parameters = Object.assign( {}, source.parameters );
+
+		return this;
+
+	}
+
+	static fromJSON( data ) {
+
+		return new RingGeometry( data.innerRadius, data.outerRadius, data.thetaSegments, data.phiSegments, data.thetaStart, data.thetaLength );
+
+	}
+
+}
+
 class SphereGeometry extends BufferGeometry {
 
 	constructor( radius = 1, widthSegments = 32, heightSegments = 16, phiStart = 0, phiLength = Math.PI * 2, thetaStart = 0, thetaLength = Math.PI ) {
@@ -29571,17 +29692,21 @@ class SphereGeometry extends BufferGeometry {
 
 }
 
-class MeshLambertMaterial extends Material {
+class MeshStandardMaterial extends Material {
 
 	constructor( parameters ) {
 
 		super();
 
-		this.isMeshLambertMaterial = true;
+		this.isMeshStandardMaterial = true;
 
-		this.type = 'MeshLambertMaterial';
+		this.defines = { 'STANDARD': '' };
+
+		this.type = 'MeshStandardMaterial';
 
 		this.color = new Color( 0xffffff ); // diffuse
+		this.roughness = 1.0;
+		this.metalness = 0.0;
 
 		this.map = null;
 
@@ -29606,14 +29731,14 @@ class MeshLambertMaterial extends Material {
 		this.displacementScale = 1;
 		this.displacementBias = 0;
 
-		this.specularMap = null;
+		this.roughnessMap = null;
+
+		this.metalnessMap = null;
 
 		this.alphaMap = null;
 
 		this.envMap = null;
-		this.combine = MultiplyOperation;
-		this.reflectivity = 1;
-		this.refractionRatio = 0.98;
+		this.envMapIntensity = 1.0;
 
 		this.wireframe = false;
 		this.wireframeLinewidth = 1;
@@ -29632,7 +29757,11 @@ class MeshLambertMaterial extends Material {
 
 		super.copy( source );
 
+		this.defines = { 'STANDARD': '' };
+
 		this.color.copy( source.color );
+		this.roughness = source.roughness;
+		this.metalness = source.metalness;
 
 		this.map = source.map;
 
@@ -29657,14 +29786,14 @@ class MeshLambertMaterial extends Material {
 		this.displacementScale = source.displacementScale;
 		this.displacementBias = source.displacementBias;
 
-		this.specularMap = source.specularMap;
+		this.roughnessMap = source.roughnessMap;
+
+		this.metalnessMap = source.metalnessMap;
 
 		this.alphaMap = source.alphaMap;
 
 		this.envMap = source.envMap;
-		this.combine = source.combine;
-		this.reflectivity = source.reflectivity;
-		this.refractionRatio = source.refractionRatio;
+		this.envMapIntensity = source.envMapIntensity;
 
 		this.wireframe = source.wireframe;
 		this.wireframeLinewidth = source.wireframeLinewidth;
@@ -30014,6 +30143,56 @@ class ImageLoader extends Loader {
 
 }
 
+class CubeTextureLoader extends Loader {
+
+	constructor( manager ) {
+
+		super( manager );
+
+	}
+
+	load( urls, onLoad, onProgress, onError ) {
+
+		const texture = new CubeTexture();
+
+		const loader = new ImageLoader( this.manager );
+		loader.setCrossOrigin( this.crossOrigin );
+		loader.setPath( this.path );
+
+		let loaded = 0;
+
+		function loadTexture( i ) {
+
+			loader.load( urls[ i ], function ( image ) {
+
+				texture.images[ i ] = image;
+
+				loaded ++;
+
+				if ( loaded === 6 ) {
+
+					texture.needsUpdate = true;
+
+					if ( onLoad ) onLoad( texture );
+
+				}
+
+			}, undefined, onError );
+
+		}
+
+		for ( let i = 0; i < urls.length; ++ i ) {
+
+			loadTexture( i );
+
+		}
+
+		return texture;
+
+	}
+
+}
+
 class TextureLoader extends Loader {
 
 	constructor( manager ) {
@@ -30098,6 +30277,287 @@ class Light extends Object3D {
 		if ( this.shadow !== undefined ) data.object.shadow = this.shadow.toJSON();
 
 		return data;
+
+	}
+
+}
+
+const _projScreenMatrix$1 = /*@__PURE__*/ new Matrix4();
+const _lightPositionWorld$1 = /*@__PURE__*/ new Vector3();
+const _lookTarget$1 = /*@__PURE__*/ new Vector3();
+
+class LightShadow {
+
+	constructor( camera ) {
+
+		this.camera = camera;
+
+		this.bias = 0;
+		this.normalBias = 0;
+		this.radius = 1;
+		this.blurSamples = 8;
+
+		this.mapSize = new Vector2( 512, 512 );
+
+		this.map = null;
+		this.mapPass = null;
+		this.matrix = new Matrix4();
+
+		this.autoUpdate = true;
+		this.needsUpdate = false;
+
+		this._frustum = new Frustum();
+		this._frameExtents = new Vector2( 1, 1 );
+
+		this._viewportCount = 1;
+
+		this._viewports = [
+
+			new Vector4( 0, 0, 1, 1 )
+
+		];
+
+	}
+
+	getViewportCount() {
+
+		return this._viewportCount;
+
+	}
+
+	getFrustum() {
+
+		return this._frustum;
+
+	}
+
+	updateMatrices( light ) {
+
+		const shadowCamera = this.camera;
+		const shadowMatrix = this.matrix;
+
+		_lightPositionWorld$1.setFromMatrixPosition( light.matrixWorld );
+		shadowCamera.position.copy( _lightPositionWorld$1 );
+
+		_lookTarget$1.setFromMatrixPosition( light.target.matrixWorld );
+		shadowCamera.lookAt( _lookTarget$1 );
+		shadowCamera.updateMatrixWorld();
+
+		_projScreenMatrix$1.multiplyMatrices( shadowCamera.projectionMatrix, shadowCamera.matrixWorldInverse );
+		this._frustum.setFromProjectionMatrix( _projScreenMatrix$1 );
+
+		shadowMatrix.set(
+			0.5, 0.0, 0.0, 0.5,
+			0.0, 0.5, 0.0, 0.5,
+			0.0, 0.0, 0.5, 0.5,
+			0.0, 0.0, 0.0, 1.0
+		);
+
+		shadowMatrix.multiply( _projScreenMatrix$1 );
+
+	}
+
+	getViewport( viewportIndex ) {
+
+		return this._viewports[ viewportIndex ];
+
+	}
+
+	getFrameExtents() {
+
+		return this._frameExtents;
+
+	}
+
+	dispose() {
+
+		if ( this.map ) {
+
+			this.map.dispose();
+
+		}
+
+		if ( this.mapPass ) {
+
+			this.mapPass.dispose();
+
+		}
+
+	}
+
+	copy( source ) {
+
+		this.camera = source.camera.clone();
+
+		this.bias = source.bias;
+		this.radius = source.radius;
+
+		this.mapSize.copy( source.mapSize );
+
+		return this;
+
+	}
+
+	clone() {
+
+		return new this.constructor().copy( this );
+
+	}
+
+	toJSON() {
+
+		const object = {};
+
+		if ( this.bias !== 0 ) object.bias = this.bias;
+		if ( this.normalBias !== 0 ) object.normalBias = this.normalBias;
+		if ( this.radius !== 1 ) object.radius = this.radius;
+		if ( this.mapSize.x !== 512 || this.mapSize.y !== 512 ) object.mapSize = this.mapSize.toArray();
+
+		object.camera = this.camera.toJSON( false ).object;
+		delete object.camera.matrix;
+
+		return object;
+
+	}
+
+}
+
+const _projScreenMatrix = /*@__PURE__*/ new Matrix4();
+const _lightPositionWorld = /*@__PURE__*/ new Vector3();
+const _lookTarget = /*@__PURE__*/ new Vector3();
+
+class PointLightShadow extends LightShadow {
+
+	constructor() {
+
+		super( new PerspectiveCamera( 90, 1, 0.5, 500 ) );
+
+		this.isPointLightShadow = true;
+
+		this._frameExtents = new Vector2( 4, 2 );
+
+		this._viewportCount = 6;
+
+		this._viewports = [
+			// These viewports map a cube-map onto a 2D texture with the
+			// following orientation:
+			//
+			//  xzXZ
+			//   y Y
+			//
+			// X - Positive x direction
+			// x - Negative x direction
+			// Y - Positive y direction
+			// y - Negative y direction
+			// Z - Positive z direction
+			// z - Negative z direction
+
+			// positive X
+			new Vector4( 2, 1, 1, 1 ),
+			// negative X
+			new Vector4( 0, 1, 1, 1 ),
+			// positive Z
+			new Vector4( 3, 1, 1, 1 ),
+			// negative Z
+			new Vector4( 1, 1, 1, 1 ),
+			// positive Y
+			new Vector4( 3, 0, 1, 1 ),
+			// negative Y
+			new Vector4( 1, 0, 1, 1 )
+		];
+
+		this._cubeDirections = [
+			new Vector3( 1, 0, 0 ), new Vector3( - 1, 0, 0 ), new Vector3( 0, 0, 1 ),
+			new Vector3( 0, 0, - 1 ), new Vector3( 0, 1, 0 ), new Vector3( 0, - 1, 0 )
+		];
+
+		this._cubeUps = [
+			new Vector3( 0, 1, 0 ), new Vector3( 0, 1, 0 ), new Vector3( 0, 1, 0 ),
+			new Vector3( 0, 1, 0 ), new Vector3( 0, 0, 1 ),	new Vector3( 0, 0, - 1 )
+		];
+
+	}
+
+	updateMatrices( light, viewportIndex = 0 ) {
+
+		const camera = this.camera;
+		const shadowMatrix = this.matrix;
+
+		const far = light.distance || camera.far;
+
+		if ( far !== camera.far ) {
+
+			camera.far = far;
+			camera.updateProjectionMatrix();
+
+		}
+
+		_lightPositionWorld.setFromMatrixPosition( light.matrixWorld );
+		camera.position.copy( _lightPositionWorld );
+
+		_lookTarget.copy( camera.position );
+		_lookTarget.add( this._cubeDirections[ viewportIndex ] );
+		camera.up.copy( this._cubeUps[ viewportIndex ] );
+		camera.lookAt( _lookTarget );
+		camera.updateMatrixWorld();
+
+		shadowMatrix.makeTranslation( - _lightPositionWorld.x, - _lightPositionWorld.y, - _lightPositionWorld.z );
+
+		_projScreenMatrix.multiplyMatrices( camera.projectionMatrix, camera.matrixWorldInverse );
+		this._frustum.setFromProjectionMatrix( _projScreenMatrix );
+
+	}
+
+}
+
+class PointLight extends Light {
+
+	constructor( color, intensity, distance = 0, decay = 2 ) {
+
+		super( color, intensity );
+
+		this.isPointLight = true;
+
+		this.type = 'PointLight';
+
+		this.distance = distance;
+		this.decay = decay;
+
+		this.shadow = new PointLightShadow();
+
+	}
+
+	get power() {
+
+		// compute the light's luminous power (in lumens) from its intensity (in candela)
+		// for an isotropic light source, luminous power (lm) = 4 π luminous intensity (cd)
+		return this.intensity * 4 * Math.PI;
+
+	}
+
+	set power( power ) {
+
+		// set the light's intensity (in candela) from the desired luminous power (in lumens)
+		this.intensity = power / ( 4 * Math.PI );
+
+	}
+
+	dispose() {
+
+		this.shadow.dispose();
+
+	}
+
+	copy( source, recursive ) {
+
+		super.copy( source, recursive );
+
+		this.distance = source.distance;
+		this.decay = source.decay;
+
+		this.shadow = source.shadow.clone();
+
+		return this;
 
 	}
 
@@ -32884,36 +33344,41 @@ const loader = new TextureLoader();
 
 // 2.1 GEOMETRY
 const sphereGeometry = new SphereGeometry(0.5);
+const ringGeometry = new RingGeometry(10, 20, 32);
 
-// 2.2 MATERIALS
-const sunMaterial = new MeshLambertMaterial({
+// 2.2 MATERIALS & TEXTURES
+const sunMaterial = new MeshBasicMaterial({
     map: loader.load('./assets/sun.jpeg')
 });
-const mercuryMaterial = new MeshLambertMaterial({
+const mercuryMaterial = new MeshStandardMaterial({
     map: loader.load('./assets/mercury.png')
 });
-const venusMaterial = new MeshLambertMaterial({
+const venusMaterial = new MeshStandardMaterial({
     map: loader.load('./assets/venus.jpeg')
 });
-const earthMaterial = new MeshLambertMaterial({
+const earthMaterial = new MeshStandardMaterial({
     map: loader.load('./assets/earth.jpeg')
 });
-const moonMaterial = new MeshLambertMaterial({
+const moonMaterial = new MeshStandardMaterial({
     map: loader.load('./assets/moon.jpg')
 });
-const marsMaterial = new MeshLambertMaterial({
+const marsMaterial = new MeshStandardMaterial({
     map: loader.load('./assets/mars.jpeg')
 });
-const jupiterMaterial = new MeshLambertMaterial({
+const jupiterMaterial = new MeshStandardMaterial({
     map: loader.load('./assets/jupiter.jpg')
 });
-const saturnMaterial = new MeshLambertMaterial({
+const saturnMaterial = new MeshStandardMaterial({
     map: loader.load('./assets/saturn.jpg')
 });
-const uranusMaterial = new MeshLambertMaterial({
+const saturnRingMaterial = new MeshBasicMaterial({
+    map: loader.load('./assets/saturn ring.png'),
+    side: DoubleSide
+});
+const uranusMaterial = new MeshStandardMaterial({
     map: loader.load('./assets/uranus.jpg')
 });
-const neptuneMaterial = new MeshLambertMaterial({
+const neptuneMaterial = new MeshStandardMaterial({
     map: loader.load('./assets/neptune.jpg')
 });
 
@@ -32922,9 +33387,11 @@ const sun = new Mesh(sphereGeometry, sunMaterial);
 scene.add(sun);
 
 const mercury = new Mesh(sphereGeometry, mercuryMaterial);
+const mercuryObj = new Object3D();
+mercuryObj.add(mercury);
+scene.add(mercuryObj);
 mercury.scale.set(0.2, 0.2, 0.2);
 mercury.position.x += 1;
-sun.add(mercury);
 
 const venus = new Mesh(sphereGeometry, venusMaterial);
 venus.scale.set(0.3, 0.3, 0.3);
@@ -32952,9 +33419,18 @@ jupiter.position.x += 3;
 sun.add(jupiter);
 
 const saturn = new Mesh(sphereGeometry, saturnMaterial);
+const saturnObj = new Object3D();
+saturnObj.add(saturn);
+scene.add(saturnObj);
 saturn.scale.set(0.4, 0.4, 0.4);
 saturn.position.x += 3.5;
-sun.add(saturn);
+
+const saturnRing = new Mesh(ringGeometry, saturnRingMaterial);
+saturnObj.add(saturnRing);
+saturnRing.scale.set(0.03, 0.03, 0.03);
+saturnRing.position.x += 3.5;
+saturnRing.rotateX(-1.57);
+
 
 const uranus = new Mesh(sphereGeometry, uranusMaterial);
 uranus.scale.set(0.35, 0.35, 0.35);
@@ -32973,7 +33449,7 @@ const sizes = {
 };
 
 const camera = new PerspectiveCamera(75, sizes.clientWidth / sizes.clientHeight);
-camera.position.z = 3;
+camera.position.z = 4;
 scene.add(camera);
 
 
@@ -32984,13 +33460,24 @@ renderer.setSize(sizes.clientWidth, sizes.clientHeight, false);
 
 
 // 5 lights
-/*const directionalLight = new DirectionalLight();
-directionalLight.position.set(-3, 2, -1).normalize();
-scene.add(directionalLight);*/
-
-let ambientLight = new AmbientLight(0xffffff, 0.7);
+/*let ambientLight = new AmbientLight(0xffffff, 0.7);
 ambientLight.castShadow = false;
+scene.add(ambientLight);*/
+const pointLight = new PointLight(0xFFFFFF, 2, 300);
+scene.add(pointLight);
+
+const ambientLight = new AmbientLight(0x333333);
 scene.add(ambientLight);
+
+const cubeTextureLoader = new CubeTextureLoader();
+scene.background = cubeTextureLoader.load([
+    './assets/stars.jpg',
+    './assets/stars.jpg',
+    './assets/stars.jpg',
+    './assets/stars.jpg',
+    './assets/stars.jpg',
+    './assets/stars.jpg'
+]);
 
 
 // 6 responsivity
@@ -33024,24 +33511,36 @@ const clock = new Clock();
 const cameraControls = new CameraControls(camera, canvas);
 cameraControls.dollyToCursor = true;
 
+
+
 // 8 the animation
-const earthSpeed = 0.02;
 function animate() {
     const delta = clock.getDelta();
     cameraControls.update(delta);
 
-    sun.rotation.y += 0.001;
-    earth.rotation.y += earthSpeed;
-    mercury.rotation.y += earthSpeed * 4;
-    venus.rotation.y += earthSpeed * 2;
-    mars.rotation.y += earthSpeed * 0.5;
-    neptune.rotation.y += earthSpeed * 1.5;
-    uranus.rotation.y += earthSpeed * 2.5;
-    saturn.rotation.y += earthSpeed * 3;
-    jupiter.rotation.y += earthSpeed * 4;
+    //sun.rotation.y += 0.004;
+    //earth.rotation.y += 0.004;
+    mercury.rotation.y += 0.004;
+    mercuryObj.rotation.y += 0.004;
+    // venus.rotation.y += 2;
+    // mars.rotation.y += 0.5;
+    // neptune.rotation.y += 1.5;
+    // uranus.rotation.y += 2.5;
+    saturn.rotation.y += 0.038;
+    saturnObj.rotation.y += 0.0009;
+    //jupiter.rotation.y += 4;
+
 
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
+    return {
+        render({ time }) {
+            sun.rotation.y = time * 0.05;
+
+            mercuryGroup.rotation.y = time * 0.5;
+            mercury.rotation.y = time * 0.20;
+        }
+    }
 }
 
 animate();
