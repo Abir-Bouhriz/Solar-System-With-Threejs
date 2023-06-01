@@ -1,8 +1,8 @@
 # Solar-System-With-Threejs
 This repository contains a Solar System visualization project built using the Three.js library. 
 
-## ScreenShots:
-
+## GIF:
+![](https://github.com/Abir-Bouhriz/Solar-System-With-Threejs/blob/main/assets/solarSystemGif.gif)
 
 
 ## Tools & languages:
