@@ -1,19 +1,18 @@
 # Solar-System-With-Threejs
 This repository contains a Solar System visualization project built using the Three.js library. 
 
-## ScreenShots:
-
+## GIF:
+![](https://github.com/Abir-Bouhriz/Solar-System-With-Threejs/blob/main/assets/solarSystemGif.gif)
 
 
 ## Tools & languages:
 
-* Visual Studio Code
-* HTML
-* CSS
+* Visual Studio Code (IDE)
 * Three.js
+* HTML & CSS
 
 ## Demo
-A live demo of the Solar System visualization can be accessed (here)[https://abir-bouhriz.github.io/Solar-System-With-Threejs/].
+A live demo of the Solar System visualization can be accessed [here](https://abir-bouhriz.github.io/Solar-System-With-Threejs/).
 
 ## Getting Started
 To run the project locally, follow these steps:
@@ -26,7 +25,7 @@ To run the project locally, follow these steps:
    ```sh
    npm install
    ```
-3. Open your web browser and visit http://localhost:5500/index.html) 
+3. Open your web browser and visit http://localhost:5500/index.html 
 
 ## Usage
 Once you have the project running, you can explore the Solar System visualization using the following controls:
@@ -40,5 +39,4 @@ Once you have the project running, you can explore the Solar System visualizatio
 Feel free to fork this project and add whatever you like. If you have any suggestions or any comments please feel free to contact me or to open an issue.
 
 ## Documentation:
-* [Three.js docs](https://docs.flutter.dev/get-started/install](https://threejs.org/docs/)
-* [IFC.js](https://ifcjs.io/)
+* [Three.js](https://threejs.org/docs/)
