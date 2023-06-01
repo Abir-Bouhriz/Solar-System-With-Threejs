@@ -7,13 +7,12 @@ This repository contains a Solar System visualization project built using the Th
 
 ## Tools & languages:
 
-* Visual Studio Code
-* HTML
-* CSS
+* Visual Studio Code (IDE)
 * Three.js
+* HTML & CSS
 
 ## Demo
-A live demo of the Solar System visualization can be accessed (here)[https://abir-bouhriz.github.io/Solar-System-With-Threejs/].
+A live demo of the Solar System visualization can be accessed [here](https://abir-bouhriz.github.io/Solar-System-With-Threejs/).
 
 ## Getting Started
 To run the project locally, follow these steps:
@@ -26,7 +25,7 @@ To run the project locally, follow these steps:
    ```sh
    npm install
    ```
-3. Open your web browser and visit http://localhost:5500/index.html) 
+3. Open your web browser and visit http://localhost:5500/index.html 
 
 ## Usage
 Once you have the project running, you can explore the Solar System visualization using the following controls:
@@ -41,4 +40,3 @@ Feel free to fork this project and add whatever you like. If you have any sugges
 
 ## Documentation:
 * [Three.js](https://threejs.org/docs/)
-* [IFC.js](https://ifcjs.io/)
