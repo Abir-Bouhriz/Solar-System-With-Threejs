@@ -33452,12 +33452,8 @@ neptune.scale.set(0.3, 0.3, 0.3);
 neptune.position.x += 4.5;
 
 // 3 the camera
-const sizes = {
-    width: 800,
-    height: 600
-};
 
-const camera = new PerspectiveCamera(75, sizes.clientWidth / sizes.clientHeight);
+const camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
 camera.position.z = 4;
 scene.add(camera);
 
@@ -33465,7 +33461,7 @@ scene.add(camera);
 // 4 the renderer
 const renderer = new WebGLRenderer({ canvas: canvas });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.setSize(sizes.clientWidth, sizes.clientHeight, false);
+renderer.setSize(window.innerWidth, window.innerHeight, false);
 
 
 // 5 lights
@@ -33490,9 +33486,9 @@ scene.background = cubeTextureLoader.load([
 
 // 7 responsivity
 window.addEventListener('resize', () => {
-    camera.aspect = canvas.clientWidth / canvas.clientHeight;
+    camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
-    renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
+    renderer.setSize(window.innerWidth, window.innerHeight, false);
 });
 
 
