@@ -40,5 +40,5 @@ Once you have the project running, you can explore the Solar System visualizatio
 Feel free to fork this project and add whatever you like. If you have any suggestions or any comments please feel free to contact me or to open an issue.
 
 ## Documentation:
-* [Three.js](https://docs.flutter.dev/get-started/install](https://threejs.org/docs/)
+* [Three.js](https://threejs.org/docs/)
 * [IFC.js](https://ifcjs.io/)
