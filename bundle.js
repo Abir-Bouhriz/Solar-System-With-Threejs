@@ -29810,6 +29810,120 @@ class MeshStandardMaterial extends Material {
 
 }
 
+class MeshPhongMaterial extends Material {
+
+	constructor( parameters ) {
+
+		super();
+
+		this.isMeshPhongMaterial = true;
+
+		this.type = 'MeshPhongMaterial';
+
+		this.color = new Color( 0xffffff ); // diffuse
+		this.specular = new Color( 0x111111 );
+		this.shininess = 30;
+
+		this.map = null;
+
+		this.lightMap = null;
+		this.lightMapIntensity = 1.0;
+
+		this.aoMap = null;
+		this.aoMapIntensity = 1.0;
+
+		this.emissive = new Color( 0x000000 );
+		this.emissiveIntensity = 1.0;
+		this.emissiveMap = null;
+
+		this.bumpMap = null;
+		this.bumpScale = 1;
+
+		this.normalMap = null;
+		this.normalMapType = TangentSpaceNormalMap;
+		this.normalScale = new Vector2( 1, 1 );
+
+		this.displacementMap = null;
+		this.displacementScale = 1;
+		this.displacementBias = 0;
+
+		this.specularMap = null;
+
+		this.alphaMap = null;
+
+		this.envMap = null;
+		this.combine = MultiplyOperation;
+		this.reflectivity = 1;
+		this.refractionRatio = 0.98;
+
+		this.wireframe = false;
+		this.wireframeLinewidth = 1;
+		this.wireframeLinecap = 'round';
+		this.wireframeLinejoin = 'round';
+
+		this.flatShading = false;
+
+		this.fog = true;
+
+		this.setValues( parameters );
+
+	}
+
+	copy( source ) {
+
+		super.copy( source );
+
+		this.color.copy( source.color );
+		this.specular.copy( source.specular );
+		this.shininess = source.shininess;
+
+		this.map = source.map;
+
+		this.lightMap = source.lightMap;
+		this.lightMapIntensity = source.lightMapIntensity;
+
+		this.aoMap = source.aoMap;
+		this.aoMapIntensity = source.aoMapIntensity;
+
+		this.emissive.copy( source.emissive );
+		this.emissiveMap = source.emissiveMap;
+		this.emissiveIntensity = source.emissiveIntensity;
+
+		this.bumpMap = source.bumpMap;
+		this.bumpScale = source.bumpScale;
+
+		this.normalMap = source.normalMap;
+		this.normalMapType = source.normalMapType;
+		this.normalScale.copy( source.normalScale );
+
+		this.displacementMap = source.displacementMap;
+		this.displacementScale = source.displacementScale;
+		this.displacementBias = source.displacementBias;
+
+		this.specularMap = source.specularMap;
+
+		this.alphaMap = source.alphaMap;
+
+		this.envMap = source.envMap;
+		this.combine = source.combine;
+		this.reflectivity = source.reflectivity;
+		this.refractionRatio = source.refractionRatio;
+
+		this.wireframe = source.wireframe;
+		this.wireframeLinewidth = source.wireframeLinewidth;
+		this.wireframeLinecap = source.wireframeLinecap;
+		this.wireframeLinejoin = source.wireframeLinejoin;
+
+		this.flatShading = source.flatShading;
+
+		this.fog = source.fog;
+
+		return this;
+
+	}
+
+}
+
 const Cache = {
 
 	enabled: false,
@@ -30138,56 +30252,6 @@ class ImageLoader extends Loader {
 		image.src = url;
 
 		return image;
-
-	}
-
-}
-
-class CubeTextureLoader extends Loader {
-
-	constructor( manager ) {
-
-		super( manager );
-
-	}
-
-	load( urls, onLoad, onProgress, onError ) {
-
-		const texture = new CubeTexture();
-
-		const loader = new ImageLoader( this.manager );
-		loader.setCrossOrigin( this.crossOrigin );
-		loader.setPath( this.path );
-
-		let loaded = 0;
-
-		function loadTexture( i ) {
-
-			loader.load( urls[ i ], function ( image ) {
-
-				texture.images[ i ] = image;
-
-				loaded ++;
-
-				if ( loaded === 6 ) {
-
-					texture.needsUpdate = true;
-
-					if ( onLoad ) onLoad( texture );
-
-				}
-
-			}, undefined, onError );
-
-		}
-
-		for ( let i = 0; i < urls.length; ++ i ) {
-
-			loadTexture( i );
-
-		}
-
-		return texture;
 
 	}
 
@@ -33385,6 +33449,8 @@ scene.add(sun);
 
 const mercury = new Mesh(sphereGeometry, mercuryMaterial);
 const mercuryObj = new Object3D();
+mercury.name = 'mercury';
+mercuryObj.name = 'mercuryObj';
 mercuryObj.add(mercury);
 scene.add(mercuryObj);
 mercury.scale.set(0.2, 0.2, 0.2);
@@ -33392,6 +33458,8 @@ mercury.position.x += 1;
 
 const venus = new Mesh(sphereGeometry, venusMaterial);
 const venusObj = new Object3D();
+venus.name = 'venus';
+venusObj.name = 'venusObj';
 venusObj.add(venus);
 scene.add(venusObj);
 venus.scale.set(0.3, 0.3, 0.3);
@@ -33399,18 +33467,23 @@ venus.position.x += 1.5;
 
 const earth = new Mesh(sphereGeometry, earthMaterial);
 const earthObj = new Object3D();
+earth.name = 'earth';
+earthObj.name = 'earthObj';
 earthObj.add(earth);
 scene.add(earthObj);
 earth.scale.set(0.3, 0.3, 0.3);
 earth.position.x += 2;
 
 const moon = new Mesh(sphereGeometry, moonMaterial);
+moon.name = 'moon';
 moon.scale.set(0.3, 0.3, 0.3);
 moon.position.x += 1;
 earth.add(moon);
 
 const mars = new Mesh(sphereGeometry, marsMaterial);
 const marsObj = new Object3D();
+mars.name = 'mars';
+marsObj.name = 'marsObj';
 marsObj.add(mars);
 scene.add(marsObj);
 mars.scale.set(0.25, 0.25, 0.25);
@@ -33418,6 +33491,8 @@ mars.position.x += 2.5;
 
 const jupiter = new Mesh(sphereGeometry, jupiterMaterial);
 const jupiterObj = new Object3D();
+jupiter.name = 'jupiter';
+jupiterObj.name = 'jupiterObj';
 jupiterObj.add(jupiter);
 scene.add(jupiterObj);
 jupiter.scale.set(0.5, 0.5, 0.5);
@@ -33425,12 +33500,15 @@ jupiter.position.x += 3;
 
 const saturn = new Mesh(sphereGeometry, saturnMaterial);
 const saturnObj = new Object3D();
+saturn.name = 'saturn';
+saturnObj.name = 'saturnOBJ';
 saturnObj.add(saturn);
 scene.add(saturnObj);
 saturn.scale.set(0.4, 0.4, 0.4);
 saturn.position.x += 3.5;
 
 const saturnRing = new Mesh(ringGeometry, saturnRingMaterial);
+saturnRing.name = 'saturnRing';
 saturnObj.add(saturnRing);
 saturnRing.scale.set(0.03, 0.03, 0.03);
 saturnRing.position.x += 3.5;
@@ -33439,6 +33517,8 @@ saturnRing.rotateX(-1.57);
 
 const uranus = new Mesh(sphereGeometry, uranusMaterial);
 const uranusObj = new Object3D();
+uranus.name = 'uranus';
+uranusObj.name = 'uranus';
 uranusObj.add(uranus);
 scene.add(uranusObj);
 uranus.scale.set(0.35, 0.35, 0.35);
@@ -33446,10 +33526,17 @@ uranus.position.x += 4;
 
 const neptune = new Mesh(sphereGeometry, neptuneMaterial);
 const neptuneObj = new Object3D();
+neptune.name = 'neptune';
+neptuneObj.name = 'neptune';
 neptuneObj.add(neptune);
 scene.add(neptuneObj);
 neptune.scale.set(0.3, 0.3, 0.3);
 neptune.position.x += 4.5;
+
+
+var Objects = scene.children;
+console.log(Objects);
+console.log(Objects[2].name);
 
 // 3 the camera
 
@@ -33473,7 +33560,8 @@ scene.add(ambientLight);
 
 
 // 6 SCENE BACKGROUND
-const cubeTextureLoader = new CubeTextureLoader();
+// 6.1 CubeTextureLoader
+/*const cubeTextureLoader = new CubeTextureLoader();
 scene.background = cubeTextureLoader.load([
     './assets/stars.jpg',
     './assets/stars.jpg',
@@ -33481,7 +33569,23 @@ scene.background = cubeTextureLoader.load([
     './assets/stars.jpg',
     './assets/stars.jpg',
     './assets/stars.jpg'
-]);
+]);*/
+
+// 6.2 Starfield
+var starGeometry = new SphereGeometry(1000, 50, 50);
+var starMaterial = new MeshPhongMaterial({
+    map: loader.load('./assets/stars_a.jpg'),
+    side: DoubleSide,
+    shininess: 1
+});
+var starField = new Mesh(starGeometry, starMaterial);
+scene.add(starField);
+
+//6.3 Simple
+/*const loader = new TextureLoader();
+loader.load('./assets/stars_a.jpg', function (texture) {
+    scene.background = texture;
+});*/
 
 
 // 7 responsivity
